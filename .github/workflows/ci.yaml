@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches:["main"]
+    branches: ["main"]
 
 jobs:
   build:
@@ -26,3 +26,4 @@ jobs:
       - name: Lint
         run: pnpm lint
       - name: Check types
+        run: pnpm type-check
