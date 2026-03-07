@@ -1,7 +1,7 @@
 /**
  * axios 封装
  */
-import axios, { type AxiosError, type AxiosRequestConfig } from 'axios';
+import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios';
 
 /**
  * 扩展的请求配置，支持 Next.js cache 选项
@@ -49,7 +49,7 @@ const errorHandler = (error: AxiosError) => {
   return Promise.reject(error);
 };
 
-const createInstance = (baseURL: string) => {
+const createInstance = (baseURL: string): AxiosInstance => {
   const instance = axios.create({
     baseURL,
     headers: {
