@@ -1,5 +1,4 @@
-const REQUEST_CACHE_KEY = "example";
+const REQUEST_CACHE_KEY = 'example';
+const USER_REQUEST_CACHE_KEY = 'user';
 
-export {
-    REQUEST_CACHE_KEY
-}
+export { REQUEST_CACHE_KEY, USER_REQUEST_CACHE_KEY };
