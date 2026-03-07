@@ -13,7 +13,7 @@ export class UserService {
     };
 
     this.userList.push(user);
-    return new Promise((resolve) => {
+    return new Promise<UserResponse>((resolve) => {
       setTimeout(() => {
         resolve(user);
       }, 1000);
@@ -21,7 +21,7 @@ export class UserService {
   }
 
   async getUserList(): Promise<User[]> {
-    return new Promise((resolve) => {
+    return new Promise<User[]>((resolve) => {
       setTimeout(() => {
         resolve(this.userList);
       }, 1000);
@@ -29,16 +29,20 @@ export class UserService {
   }
 
   async updateUser(updateUser: UpdateUser): Promise<UserResponse> {
-    const user = this.userList.find((user) => user.id === updateUser.id);
-    if (!user) {
+    const userIndex = this.userList.findIndex((u) => u.id === updateUser.id);
+    if (userIndex === -1) {
       throw new NotFoundException('User not found');
     }
+
+    const user = this.userList[userIndex];
     const updatedUser: User = {
       ...user,
       ...updateUser,
     };
 
-    return new Promise((resolve) => {
+    this.userList[userIndex] = updatedUser;
+
+    return new Promise<UserResponse>((resolve) => {
       setTimeout(() => {
         resolve(updatedUser);
       }, 1000);
@@ -46,13 +50,14 @@ export class UserService {
   }
 
   async getUser(id: string): Promise<UserResponse> {
-    const user = this.userList.find((user) => user.id === id);
+    const user = this.userList.find((u) => u.id === id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return new Promise((resolve) => {
+    const foundUser: UserResponse = user;
+    return new Promise<UserResponse>((resolve) => {
       setTimeout(() => {
-        resolve(user);
+        resolve(foundUser);
       }, 1000);
     });
   }

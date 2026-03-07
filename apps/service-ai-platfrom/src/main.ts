@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import type { OpenAPIObject } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 import { HttpExceptionFilter } from './filter/zod-validation-exception.filter';
@@ -28,7 +27,7 @@ async function bootstrap() {
     .build();
 
   const rawDocument = SwaggerModule.createDocument(app, config);
-  const document = cleanupOpenApiDoc(rawDocument) as OpenAPIObject;
+  const document = cleanupOpenApiDoc(rawDocument);
   SwaggerModule.setup('api-docs', app, document);
 
   await app.listen(process.env.PORT ?? 8080);

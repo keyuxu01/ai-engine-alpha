@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import type { User, UpdateUser } from '@repo/schemas';
+import type { UpdateUser } from '@repo/schemas';
 import { userApi } from '../../api';
 
 export default function EditUserPage() {
@@ -45,7 +45,7 @@ export default function EditUserPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setSubmitting(true);
       setError(null);
@@ -58,11 +58,9 @@ export default function EditUserPage() {
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: name === 'age' ? parseInt(value, 10) : value,
     }));
@@ -96,7 +94,10 @@ export default function EditUserPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="id" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="id"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               ID
             </label>
             <input
@@ -110,7 +111,10 @@ export default function EditUserPage() {
           </div>
 
           <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="name"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Name *
             </label>
             <input
@@ -128,7 +132,10 @@ export default function EditUserPage() {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Email *
             </label>
             <input
@@ -144,7 +151,10 @@ export default function EditUserPage() {
           </div>
 
           <div>
-            <label htmlFor="age" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="age"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Age *
             </label>
             <input
@@ -162,7 +172,10 @@ export default function EditUserPage() {
           </div>
 
           <div>
-            <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="role"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Role *
             </label>
             <select
