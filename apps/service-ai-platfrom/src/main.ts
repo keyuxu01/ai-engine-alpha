@@ -2,8 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
-import { HttpExceptionFilter } from './filter/zod-validation-exception.filter';
-import { ZodValidationExceptionFilter } from './filter/http-exception.filter';
+import { ZodValidationExceptionFilter } from './filter/zod-validation-exception.filter';
+import { HttpExceptionFilter } from './filter/http-exception.filter';
 
 import { AppModule } from './app.module';
 
@@ -11,9 +11,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // 注册全局异常过滤器（格式化错误响应）
+  // 注意：后注册的先执行，所以更具体的异常过滤器要后注册
   app.useGlobalFilters(
-    new HttpExceptionFilter(),
-    new ZodValidationExceptionFilter(),
+    new HttpExceptionFilter(), // 捕获所有 HttpException（通用）
+    new ZodValidationExceptionFilter(), // 捕获 ZodValidationException（具体，先执行）
   );
 
   // Enable CORS

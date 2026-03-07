@@ -1,24 +1,41 @@
-import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  Logger,
+} from '@nestjs/common';
 import { Response } from 'express';
-import { ZodValidationException } from 'nestjs-zod';
+import { ZodSerializationException } from 'nestjs-zod';
 
-@Catch(ZodValidationException)
-export class ZodValidationExceptionFilter implements ExceptionFilter<ZodValidationException> {
-  catch(exception: ZodValidationException, host: ArgumentsHost) {
+@Catch(HttpException)
+export class HttpExceptionFilter implements ExceptionFilter<HttpException> {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
+  catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const status = exception.getStatus();
-    const zodError = exception.getZodError() as {
-      issues: { path: (string | number)[]; message: string }[];
-    };
+
+    if (exception instanceof ZodSerializationException) {
+      const zodError = exception.getZodError() as {
+        issues: unknown[];
+      };
+      this.logger.error(
+        `Serialization failed: ${exception.message}`,
+        zodError.issues,
+      );
+
+      response.status(500).json({
+        statusCode: 500,
+        message: 'Internal server error: response serialization failed',
+      });
+      return;
+    }
 
     response.status(status).json({
       statusCode: status,
-      message: 'Validation failed',
-      errors: zodError.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
+      message: exception.message,
     });
   }
 }
