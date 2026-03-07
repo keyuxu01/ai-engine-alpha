@@ -33,11 +33,14 @@ export class UserService {
     if (userIndex === -1) {
       throw new NotFoundException('User not found');
     }
-
     const user = this.userList[userIndex];
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     const updatedUser: User = {
       ...user,
       ...updateUser,
+      id: user.id,
     };
 
     this.userList[userIndex] = updatedUser;
