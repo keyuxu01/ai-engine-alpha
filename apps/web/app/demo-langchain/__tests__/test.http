@@ -3,7 +3,13 @@ POST http://localhost:3000/demo-langchain
 Content-Type: application/json
 
 {
-  "filePath": "apps/web/package.json",
-  "humanMessage": "请读取这个文件内容并总结"
+  "humanMessage": "列出当前目录的文件结构"
 }
 
+### 开始对话
+POST http://localhost:3000/demo-langchain
+Content-Type: application/json
+
+{
+  "humanMessage": "为 apps/web/app/demo-langchain/__tests__/test2.http 增加 3 个测试用例，测试工具的执行结果"
+}

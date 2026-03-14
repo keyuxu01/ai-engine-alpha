@@ -13,7 +13,8 @@
         "QWEN_CODER_TURBO_MODEL_NAME",
         "QWEN_CODER_TURBO_MODEL_BASE_URL",
         "PROJECT_ROOT",
-        "APP_ENV"
+        "APP_ENV",
+        "QWEN_CODER_PLUS_MODEL_NAME"
       ]
     },
     "lint": {

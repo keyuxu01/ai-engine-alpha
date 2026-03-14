@@ -1,23 +1,29 @@
 import 'dotenv/config';
 import { NextRequest, NextResponse } from 'next/server';
 import { ChatOpenAI } from '@langchain/openai';
-import {
-  HumanMessage,
-  SystemMessage,
-  ToolMessage,
-  type MessageType,
-} from '@langchain/core/messages';
-import type { BaseMessage } from '@langchain/core/messages';
+import { HumanMessage, SystemMessage, ToolMessage } from '@langchain/core/messages';
+/**
+ * InMemoryChatMessageHistory - LangChain 提供的内存消息历史管理类
+ * 用于在内存中存储和管理对话消息，支持添加消息和获取消息历史
+ */
+import { InMemoryChatMessageHistory } from '@langchain/core/chat_history';
 
-import { readFileTool } from './tools';
+import {
+  readFileTool,
+  writeFileTool,
+  executeCommandTool,
+  listDirectoryTool,
+} from './tools';
 
 /**
- * ChatOpenAI 这个类是 LangChain 提供的，用来创建一个模型。这个模型是 OpenAI 的模型。
- * 参数：
- * - modelName: 模型名称
- * - apiKey: 模型 API 密钥
- * - temperature: 温度，也就是 ai 的创造性，设置为 0，让它严格按照指令来做事情，不要自己发挥
- * - configuration: 配置，用于配置模型的基本信息
+ * 创建 ChatOpenAI 模型实例
+ *
+ * 参数说明：
+ * - modelName: 模型名称，使用通义千问 coder turbo
+ * - apiKey: API 密钥，从环境变量 QWEN_LLM_API_KEY 获取
+ * - temperature: 温度参数，设置为 0 表示最小随机性，让模型更确定性
+ * - configuration: 额外配置
+ *   - baseURL: API 基础URL，指向阿里云 DashScope
  */
 const model = new ChatOpenAI({
   modelName: process.env.QWEN_CODER_TURBO_MODEL_NAME || 'qwen-coder-turbo',
@@ -28,130 +34,176 @@ const model = new ChatOpenAI({
   },
 });
 
-// 使用工具列表
-const tools = [readFileTool];
+/**
+ * 定义可用工具列表
+ *
+ * LangChain Agent 可以使用这些工具来完成任务：
+ * - readFileTool: 读取文件内容
+ * - writeFileTool: 写入文件内容
+ * - executeCommandTool: 执行系统命令
+ * - listDirectoryTool: 列出目录内容
+ */
+const tools = [readFileTool, writeFileTool, executeCommandTool, listDirectoryTool];
 
-// 将模型和工具绑定在一起，这样模型可以调用工具
+/**
+ * 将工具绑定到模型
+ *
+ * bindTools 是 LangChain 的核心方法之一
+ * 它会：
+ * 1. 将工具定义传递给模型，让模型知道有哪些工具可用
+ * 2. 修改模型的输出格式，当模型需要调用工具时，会返回 structured output 而不是普通文本
+ * 3. 返回一个新的 Runnable，可以像调用普通模型一样调用，但会自动处理工具调用
+ */
 const modelWithTools = model.bindTools(tools);
 
 /**
- * POST 请求处理函数
+ * POST 请求处理函数 - AI Agent API 端点
  *
- * 问题 1: 每次 POST messages 会不会丢失？
- * - 当前实现：每个请求都是独立的，messages 不会保留
- * - 解决方案：支持从客户端传入 messages，实现多轮对话
+ * 工作流程：
+ * 1. 解析请求体，获取用户消息和参数
+ * 2. 初始化消息历史（使用 InMemoryChatMessageHistory）
+ * 3. 添加系统消息（定义 Agent 角色和行为规则）
+ * 4. 添加用户消息
+ * 5. 进入 Agent 循环：
+ *    a. 调用模型，获取响应
+ *    b. 检查响应是否包含工具调用
+ *    c. 如果没有工具调用，返回最终结果
+ *    d. 如果有工具调用，执行工具并将结果添加到历史，然后继续循环
+ * 6. 如果达到最大迭代次数仍未完成，返回当前结果
  *
  * @param req - Next.js 请求对象
- * @returns JSON 响应
+ * @returns JSON 响应，包含 AI 回复和消息历史
  */
 export async function POST(req: NextRequest) {
   try {
-    // 解析请求体
+    // 1. 解析请求体
     const body = await req.json();
     const {
-      messages: clientMessages, // 客户端传入的消息历史（用于多轮对话）
-      filePath: filePathParam, // 要读取的文件路径
-      humanMessage, // 用户消息
+      humanMessage, // 用户消息，必填
+      maxIterations = 30, // 最大迭代次数，默认30次，防止无限循环
     } = body;
 
-    // 默认读取当前文件
-    const filePath = filePathParam || 'apps/web/app/demo-langchain/route.ts';
+    console.log('humanMessage:', humanMessage);
+    console.log('maxIterations:', maxIterations);
 
-    console.log('clientMessages', clientMessages);
-    console.log('filePath', filePath);
-    console.log('humanMessage', humanMessage);
-    // 构建消息列表
-    // 如果客户端传入 messages，则使用客户端的消息；否则创建新的对话
-    const messages: BaseMessage[] = clientMessages
-      ? clientMessages.map((msg: { type: MessageType; content: string }) => {
-          // 根据消息类型创建对应的消息对象
-          switch (msg.type) {
-            case 'system':
-              return new SystemMessage(msg.content);
-            case 'human':
-              return new HumanMessage(msg.content);
-            case 'ai':
-              return new HumanMessage(msg.content); // 简化处理
-            default:
-              return new HumanMessage(msg.content);
-          }
-        })
-      : [
-          // 首次对话：创建系统消息和用户消息
-          new SystemMessage(`你是一个代码助手，可以使用工具读取文件并解释代码。
+    // 2. 使用 InMemoryChatMessageHistory 管理消息历史
+    // 相比手动管理数组，InMemoryChatMessageHistory 提供了更方便的 API
+    const history = new InMemoryChatMessageHistory();
 
-工作流程：
-1. 用户要求读取文件时，立即调用 read_file 工具，传入用户提供的文件路径
-2. 等待工具返回文件内容
-3. 基于文件内容进行分析和解释
+    // 3. 添加系统消息
+    // 系统消息定义了 Agent 的角色、能力和行为规则
+    await history.addMessage(
+      new SystemMessage(`你是一个项目管理助手，使用工具完成任务。
 
-可用工具：
-- read_file: 读取文件内容（使用此工具来获取文件内容）
-`),
-          new HumanMessage(
-            humanMessage
-              ? `${humanMessage}\n\n文件路径：${filePath}`
-              : `请读取 ${filePath} 文件内容并解释代码`,
-          ),
-        ];
+当前工作目录: ${process.cwd()}
 
-    // 第一次模型调用
-    let response = await modelWithTools.invoke(messages);
+工具列表: ${tools.map(t => t.name).join(', ')}
 
-    // 循环处理工具调用（Agent 模式）
-    // 模型可能返回 tool_calls，需要执行工具并返回结果，然后再次调用模型
-    while (response.tool_calls && response.tool_calls.length > 0) {
-      console.log(`\n[检测到 ${response.tool_calls.length} 个工具调用]`);
+工具使用方法:
+- read_file: 读取文件内容
+- write_file: 写入文件内容
+- execute_command: 执行命令
+- list_directory: 列出目录内容
 
-      // 将模型响应（AIMessage）添加到消息历史
-      messages.push(response as unknown as BaseMessage);
+重要规则 - execute_command：
+- workingDirectory 参数会自动切换到指定目录
+- 当使用 workingDirectory 时，绝对不要在 command 中使用 cd
+- 错误示例: { command: "cd react-todo-app && pnpm install", workingDirectory: "react-todo-app" }
+- 正确示例: { command: "pnpm install", workingDirectory: "react-todo-app" }
 
-      // 并行执行所有工具调用
-      const toolResults = await Promise.all(
-        response.tool_calls.map(async toolCall => {
-          // 查找对应的工具
-          const tool = tools.find(t => t.name === toolCall.name);
-          if (!tool) {
-            return `错误: 找不到工具 ${toolCall.name}`;
-          }
+重要规则 - write_file：
+- 当写入 React 组件文件（如 App.tsx）时，如果存在对应的 CSS 文件（如 App.css），在其他 import 语句后加上这个 css 的导入
 
+回复要简洁，只说做了什么`),
+    );
+
+    // 4. 添加用户消息
+    await history.addMessage(new HumanMessage(humanMessage));
+
+    // 5. Agent 循环
+    // 这个循环实现了 ReAct (Reasoning + Acting) 模式
+    // 模型会反复思考和执行工具，直到任务完成
+    for (let i = 0; i < maxIterations; i++) {
+      console.log(`\n[第 ${i + 1} 次迭代]`);
+
+      // 5a. 获取当前消息历史并调用模型
+      // 注意：每次循环都会传入完整的历史，包括之前的工具调用和结果
+      // 这样模型可以根据上下文决定下一步行动
+      const messages = await history.getMessages();
+      const response = await modelWithTools.invoke(messages);
+
+      console.log('response:', JSON.stringify(response));
+
+      // 打印响应详情，帮助调试
+      console.log('[响应类型]', response.getType());
+      console.log('[tool_calls]', response.tool_calls);
+      console.log('[content 前100字符]', String(response.content).slice(0, 100));
+
+      // 5b. 将 AI 响应添加到消息历史
+      // 这一步很重要，因为下一轮循环需要知道模型说了什么
+      await history.addMessage(response);
+
+      // 5c. 检查是否有工具调用
+      // tool_calls 是 bindTools 创建的 StructuredOutput 格式
+      // 如果模型决定调用工具，会在这里返回工具调用信息
+      if (!response.tool_calls || response.tool_calls.length === 0) {
+        // 没有工具调用，说明模型已经生成了最终回复
+        console.log(`\n[最终回复] ${response.content}`);
+
+        // 返回成功响应
+        return NextResponse.json({
+          success: true,
+          response: response.content,
+          // 同时返回消息历史，客户端可以保存用于多轮对话
+          messages: (await history.getMessages()).map(msg => ({
+            type: msg.getType(),
+            content: msg.content,
+          })),
+        });
+      }
+
+      // 5d. 执行工具调用
+      // 遍历模型返回的所有工具调用，依次执行
+      for (const toolCall of response.tool_calls) {
+        // 查找对应的工具
+        const foundTool = tools.find(t => t.name === toolCall.name);
+
+        if (foundTool) {
           console.log(`  [执行工具] ${toolCall.name}(${JSON.stringify(toolCall.args)})`);
 
-          try {
-            // 调用工具并返回结果
-            const result = await tool.invoke(toolCall.args as { filePath: string });
-            return result;
-          } catch (error) {
-            return `错误: ${error instanceof Error ? error.message : 'Unknown error'}`;
-          }
-        }),
-      );
+          // 调用工具并获取结果
+          // 使用类型断言绕过 LangChain 工具类型推断问题
+          // 因为 tools 数组有多个不同类型的工具，TypeScript 无法正确推断
+          const toolResult = await (
+            foundTool as unknown as {
+              invoke(args: Record<string, unknown>): Promise<string>;
+            }
+          ).invoke(toolCall.args as Record<string, unknown>);
 
-      // 将工具结果添加到消息历史
-      // 注意：tool_call_id 必须提供，用于关联工具调用和结果
-      response.tool_calls.forEach((toolCall, index) => {
-        messages.push(
-          new ToolMessage({
-            content: toolResults[index] as string,
-            tool_call_id: toolCall.id || `call_${index}`,
-          }),
-        );
-      });
+          // 将工具执行结果添加到消息历史
+          // ToolMessage 必须包含 tool_call_id 来关联到对应的工具调用
+          await history.addMessage(
+            new ToolMessage({
+              content: toolResult,
+              tool_call_id: toolCall.id || 'unknown',
+            }),
+          );
+        }
+      }
 
-      // 再次调用模型，传入所有历史消息和工具结果
-      // 模型会根据工具结果生成最终回复
-      response = await modelWithTools.invoke(messages);
+      // 循环会自动继续，下一轮模型会根据工具结果决定下一步
     }
 
-    console.log('\n[最终回复]');
-    console.log(response.content);
+    // 6. 达到最大迭代次数
+    // 如果循环结束还没有返回，说明达到了最大迭代次数
+    const finalMessages = await history.getMessages();
+    const lastMessage = finalMessages[finalMessages.length - 1];
+    const finalResponse = lastMessage ? String(lastMessage.content) : '';
 
-    // 返回结果
     return NextResponse.json({
       success: true,
-      response: response.toJSON(),
-      // 返回更新后的消息历史，客户端可以保存用于后续对话
-      messages: messages.map(msg => ({
+      response: finalResponse,
+      messages: finalMessages.map(msg => ({
         type: msg.getType(),
         content: msg.content,
       })),
