@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
-import { ExampleModule } from './example/example.module';
-import { UserModule } from './user/user.module';
+import { ExampleModule } from './modules/example/example.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [ExampleModule, UserModule],
