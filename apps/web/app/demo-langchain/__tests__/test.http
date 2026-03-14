@@ -1,0 +1,9 @@
+### 开始对话
+POST http://localhost:3000/demo-langchain
+Content-Type: application/json
+
+{
+  "filePath": "apps/web/package.json",
+  "humanMessage": "请读取这个文件内容并总结"
+}
+

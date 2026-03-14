@@ -6,7 +6,15 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"],
-      "env": ["API_URL", "NEXT_PUBLIC_API_URL"]
+      "env": [
+        "API_URL",
+        "NEXT_PUBLIC_API_URL",
+        "QWEN_LLM_API_KEY",
+        "QWEN_CODER_TURBO_MODEL_NAME",
+        "QWEN_CODER_TURBO_MODEL_BASE_URL",
+        "PROJECT_ROOT",
+        "APP_ENV"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]

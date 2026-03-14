@@ -31,5 +31,6 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "cSpell.words": ["langchain", "qwen"]
 }
