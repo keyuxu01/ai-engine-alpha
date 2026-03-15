@@ -13,7 +13,7 @@ import {
   writeFileTool,
   executeCommandTool,
   listDirectoryTool,
-} from './tools';
+} from '../common';
 
 /**
  * 创建 ChatOpenAI 模型实例
