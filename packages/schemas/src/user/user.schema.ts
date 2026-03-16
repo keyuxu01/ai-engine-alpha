@@ -19,6 +19,11 @@ const UserSchema = z
     age: z.int().min(1, 'Age is required').max(100, 'Age must be less than 100'),
     email: z.email('Invalid email address'),
     createdAt: z.iso.datetime(),
+    detailInfo: z.object({
+      address: z.string(),
+      phone: z.string(),
+      email: z.string(),
+    }),
   })
   .meta({
     id: 'user-entity',

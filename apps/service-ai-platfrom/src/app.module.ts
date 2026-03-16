@@ -4,9 +4,10 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
 import { ExampleModule } from './modules/example/example.module';
 import { UserModule } from './modules/user/user.module';
+import { McpModule } from './modules/mcp/mcp.module';
 
 @Module({
-  imports: [ExampleModule, UserModule],
+  imports: [ExampleModule, UserModule, McpModule],
   controllers: [],
   providers: [
     {

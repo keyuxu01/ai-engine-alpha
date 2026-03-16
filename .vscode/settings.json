@@ -32,5 +32,11 @@
       "mode": "auto"
     }
   ],
-  "cSpell.words": ["langchain", "qwen"]
+  "cSpell.words": [
+    "langchain",
+    "modelcontextprotocol",
+    "ontoolresult",
+    "qwen",
+    "singlefile"
+  ]
 }
