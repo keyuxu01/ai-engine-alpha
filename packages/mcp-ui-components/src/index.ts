@@ -9,3 +9,6 @@ export * from './types';
 
 // Utils
 export * from './lib/utils';
+
+// Note: HTML strings are exported via package.json exports["./html-strings"]
+// pointing to dist/src/generated/htmlStrings.js (auto-generated during build)

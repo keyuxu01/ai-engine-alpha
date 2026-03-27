@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { useState, useEffect } from 'react';
 import { useApp, useHostStyles } from '@modelcontextprotocol/ext-apps/react';
 import FlightDetail from './flight/FlightDetail';
-import type { FlightData } from '@/types';
+import { type FlightData, type McpStructuredContent } from '@/types';
 
 function App() {
   const { app, isConnected, error } = useApp({
@@ -20,10 +20,15 @@ function App() {
 
     // Handle tool result - this is the proper way to receive MCP data
     app.ontoolresult = (result: any) => {
-      const data = result.structuredContent || result;
+      const data = (result.structuredContent || result) as McpStructuredContent;
 
       if (data.flight) {
-        setFlight(data.flight);
+        // flight 可能是单个航班或包含 flights 数组的对象
+        if ('flights' in data.flight && data.flight.flights) {
+          setFlight(data.flight.flights[0]);
+        } else {
+          setFlight(data.flight as FlightData);
+        }
       }
     };
 

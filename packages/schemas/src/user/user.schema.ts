@@ -33,22 +33,49 @@ const UserSchema = z
     updatedAt: z.date(),
   });
 
+const DetailInfoSchema = UserSchema.shape.detailInfo;
+
 /**
- * Create user schema
+ * Create user schema - detailInfo is required
  */
-const CreateUserSchema = UserSchema.omit({ id: true, createdAt: true }).meta({
-  id: 'create-user-entity',
-  name: 'Create User',
-  description: 'Create user schema',
-});
+const CreateUserSchema = z
+  .object({
+    role: UserRoleSchema,
+    name: z
+      .string()
+      .min(1, 'Name is required')
+      .max(100, 'Name must be less than 100 characters'),
+    age: z.int().min(1, 'Age is required').max(100, 'Age must be less than 100'),
+    email: z.email('Invalid email address'),
+    detailInfo: DetailInfoSchema,
+  })
+  .meta({
+    id: 'create-user-entity',
+    name: 'Create User',
+    description: 'Create user schema',
+  });
+
 /**
  * Update user schema
  */
-const UpdateUserSchema = UserSchema.partial().meta({
-  id: 'update-user-entity',
-  name: 'Update User',
-  description: 'Update user schema',
-});
+const UpdateUserSchema = z
+  .object({
+    id: z.string(),
+    role: UserRoleSchema.optional(),
+    name: z
+      .string()
+      .min(1, 'Name is required')
+      .max(100, 'Name must be less than 100 characters')
+      .optional(),
+    age: z.int().min(1, 'Age is required').max(100, 'Age must be less than 100').optional(),
+    email: z.email('Invalid email address').optional(),
+    detailInfo: DetailInfoSchema.optional(),
+  })
+  .meta({
+    id: 'update-user-entity',
+    name: 'Update User',
+    description: 'Update user schema',
+  });
 
 /**
  * Delete user schema

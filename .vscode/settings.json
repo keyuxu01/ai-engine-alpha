@@ -37,6 +37,8 @@
     "modelcontextprotocol",
     "ontoolresult",
     "qwen",
-    "singlefile"
+    "rekog",
+    "singlefile",
+    "Streamable"
   ]
 }

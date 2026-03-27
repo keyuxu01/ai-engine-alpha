@@ -33,7 +33,7 @@ async function bootstrap() {
   const document = cleanupOpenApiDoc(rawDocument);
   SwaggerModule.setup('api-docs', app, document);
 
-  await app.listen(process.env.PORT ?? 8080);
+  await app.listen(process.env.PORT ?? 9001);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

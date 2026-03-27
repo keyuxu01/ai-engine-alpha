@@ -15,7 +15,7 @@
     "@langchain/openai": "^1.2.13",
     "@mcp-ui/server": "^6.1.0",
     "@modelcontextprotocol/ext-apps": "^1.2.2",
-    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@modelcontextprotocol/sdk": "~1.25.2",
     "@repo/lib": "workspace:*",
     "@repo/mcp-ui-components": "workspace:*",
     "@repo/schemas": "workspace:*",

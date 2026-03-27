@@ -22,8 +22,8 @@ function App() {
     app.ontoolresult = (result: any) => {
       const data = result.structuredContent || result;
 
-      if (data.flights) {
-        setFlights(data.flights);
+      if (data.flight?.flights) {
+        setFlights(data.flight.flights);
       }
     };
 

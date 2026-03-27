@@ -7,25 +7,21 @@ export class UserService {
 
   async createUser(createUser: CreateUser): Promise<UserResponse> {
     const user: User = {
-      ...createUser,
       id: Math.random().toString(36).substring(2, 15),
+      role: createUser.role,
+      name: createUser.name,
+      age: createUser.age,
+      email: createUser.email,
       createdAt: new Date().toISOString(),
+      detailInfo: createUser.detailInfo,
     };
 
     this.userList.push(user);
-    return new Promise<UserResponse>((resolve) => {
-      setTimeout(() => {
-        resolve(user);
-      }, 1000);
-    });
+    return user;
   }
 
   async getUserList(): Promise<User[]> {
-    return new Promise<User[]>((resolve) => {
-      setTimeout(() => {
-        resolve(this.userList);
-      }, 1000);
-    });
+    return this.userList;
   }
 
   async updateUser(updateUser: UpdateUser): Promise<UserResponse> {
@@ -44,12 +40,7 @@ export class UserService {
     };
 
     this.userList[userIndex] = updatedUser;
-
-    return new Promise<UserResponse>((resolve) => {
-      setTimeout(() => {
-        resolve(updatedUser);
-      }, 1000);
-    });
+    return updatedUser;
   }
 
   async getUser(id: string): Promise<UserResponse> {
@@ -57,11 +48,6 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const foundUser: UserResponse = user;
-    return new Promise<UserResponse>((resolve) => {
-      setTimeout(() => {
-        resolve(foundUser);
-      }, 1000);
-    });
+    return user;
   }
 }

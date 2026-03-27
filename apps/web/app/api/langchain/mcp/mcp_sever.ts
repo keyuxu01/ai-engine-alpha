@@ -19,7 +19,7 @@ export async function createMcpServer() {
   });
 
   // ========== 创建 UI 资源 ==========
-  const flightListUI = await createUIResource({
+  const flightListUI = createUIResource({
     uri: 'ui://ai-engine/flight-list',
     content: { type: 'rawHtml', htmlString: getFlightListHtmlString() },
     encoding: 'text',

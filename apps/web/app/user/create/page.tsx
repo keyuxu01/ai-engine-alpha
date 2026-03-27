@@ -14,6 +14,11 @@ export default function CreateUserPage() {
     email: '',
     age: 18,
     role: 'user',
+    detailInfo: {
+      address: '',
+      phone: '',
+      email: '',
+    },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,10 +40,20 @@ export default function CreateUserPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'age' ? parseInt(value, 10) : value,
-    }));
+    if (name === 'address' || name === 'phone') {
+      setFormData((prev) => ({
+        ...prev,
+        detailInfo: {
+          ...prev.detailInfo,
+          [name]: value,
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: name === 'age' ? parseInt(value, 10) : value,
+      }));
+    }
   };
 
   return (
@@ -127,6 +142,36 @@ export default function CreateUserPage() {
               <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
+          </div>
+
+          <div>
+            <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+              Address
+            </label>
+            <input
+              type="text"
+              id="address"
+              name="address"
+              value={formData.detailInfo.address}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter address"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
+              Phone
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.detailInfo.phone}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter phone number"
+            />
           </div>
 
           <div className="flex gap-4">

@@ -1,0 +1,478 @@
+# MCP 开发指南
+
+本项目基于 **@rekog/mcp-nest** 框架实现 MCP (Model Context Protocol) Server，
+使用 NestJS 作为底层框架。
+
+---
+
+## 核心参考资料
+
+| 资源 | 地址 |
+|------|------|
+| MCP-Nest 官方文档（所有子文件均需阅读） | https://github.com/rekog-labs/MCP-Nest/blob/main/docs |
+| MCP Spec — Resources | https://modelcontextprotocol.io/specification/2025-06-18/server/resources |
+| MCP Spec — Tools | https://modelcontextprotocol.io/specification/2025-06-18/server/tools |
+
+---
+
+## 1. 模块划分原则
+
+### 分层架构
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  MCP Layer (FlightTool)                                │
+│  - @Tool() / @Resource() 装饰器                       │
+│  - 只负责：参数校验、响应格式化、日志                    │
+│  - 注入 FlightService                                   │
+├─────────────────────────────────────────────────────────┤
+│  Business Layer (FlightService)                         │
+│  - 纯业务逻辑，无任何 MCP 依赖                          │
+│  - 可被：Controller、后台 Job、其他 Tool 复用            │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 规则
+
+- **禁止**在 FlightService 中导入任何 `@rekog/mcp-nest` 相关模块。
+- **禁止**在 FlightModule 中导入 McpModule，避免循环依赖。
+- MCP 层（如 FlightTool）属于 `modules/mcp/` 目录。
+- 纯业务服务（如 FlightService）属于 `modules/flight/` 目录。
+- 跨模块复用服务：通过 `McpModule` 间接导出（已在 `mcp.module.ts` 中 `exports: [FlightModule]`）。
+
+---
+
+## 2. MCP 模块注册
+
+### 自动发现（推荐）
+
+在 `McpModule.forRoot()` 所在模块的 `providers` 中声明的类，
+其所有 `@Tool()`、`@Resource()`、`@ResourceTemplate()`、`@Prompt()` 装饰的方法
+会在 NestJS 启动时**自动注册**到 MCP Server：
+
+```typescript
+@Module({
+  imports: [McpModule.forRoot({ name: 'my-server', version: '1.0.0' })],
+  providers: [MyToolService], // 自动发现 @Tool 装饰的方法
+})
+export class AppModule {}
+```
+
+### 跨模块注册（使用 forFeature）
+
+当工具定义在其他模块中时，使用 `McpModule.forFeature()` 显式注册：
+
+```typescript
+// 在目标模块中
+@Module({
+  imports: [McpModule.forFeature([MyToolService], 'my-server')],
+  providers: [MyToolService],
+})
+export class AnalyticsModule {}
+```
+
+> **重要**：`forFeature()` 的第二个参数必须是 `McpModule.forRoot()` 中定义的 `name` 值，两者必须一致。
+
+---
+
+## 3. Tools 编写规范
+
+### 标准方法签名
+
+MCP Tool 方法接收**三个参数**（顺序固定）：
+
+```typescript
+@Tool({ name: 'my_tool', description: '...', parameters: MySchema })
+async myTool(
+  args: ValidatedArgs,      // 第1个：Zod schema 验证后的参数对象
+  context: Context,         // 第2个：MCP 执行上下文（进度报告、elicitation 等）
+  request: Request,         // 第3个：原始 HTTP 请求（STDIO 模式下为 undefined）
+) {
+  // ...
+}
+```
+
+> MCP-Nest 使用 Zod schema 自动验证参数，TypeScript 类型从 schema 推断。
+
+### Tool 返回格式
+
+MCP-Nest 推荐返回**双格式**响应（同时服务 LLM 和客户端 UI）：
+
+```typescript
+return {
+  content: [
+    {
+      type: 'text' as const,
+      text: '人类可读的摘要文本', // LLM 直接消费
+    },
+  ],
+  structuredContent: {
+    // 机器可读的结构化数据，供客户端 UI 渲染
+    flights: [...],
+    totalCount: 10,
+  },
+};
+```
+
+### 错误处理
+
+```typescript
+// 业务级错误（找不到资源、无效输入）
+return {
+  isError: true, // 必须设为 true
+  content: [{ type: 'text', text: '未找到航班: xxx' }],
+  structuredContent: { flight: null, error: '...' },
+};
+
+// 异常级错误（数据库故障、API 超时）
+// 抛出异常，由 @UseFilters/@Catch 统一处理
+throw new NotFoundException('Flight not found');
+```
+
+### @Tool 装饰器属性
+
+| 属性 | 必填 | 说明 |
+|------|------|------|
+| `name` | ✅ | 工具唯一标识符，snake_case |
+| `description` | ✅ | 人类可读描述，说明工具用途 |
+| `parameters` | ✅ | Zod schema，定义输入参数 |
+| `outputSchema` | ❌ | Zod schema，定义输出结构 |
+| `annotations` | ❌ | 元数据提示：`readOnlyHint`、`destructiveHint` 等 |
+| `_meta` | ❌ | 自定义元数据，用于 UI 集成（如 `ui.resourceUri`） |
+
+### Tool Guards（鉴权）
+
+```typescript
+import { Tool, PublicTool, ToolScopes, ToolRoles } from '@rekog/mcp-nest';
+
+// 公开工具（无需认证）
+@PublicTool()
+@Tool({ name: 'public_search', ... })
+async publicSearch() { ... }
+
+// 需要特定 OAuth Scope
+@ToolScopes(['admin', 'write'])
+@Tool({ name: 'admin_action', ... })
+async adminAction() { ... }
+
+// 需要特定角色
+@ToolRoles(['admin'])
+@Tool({ name: 'delete_user', ... })
+async deleteUser() { ... }
+```
+
+---
+
+## 4. Resources 编写规范
+
+### 概念
+
+Resources 是**只读**数据源，AI Agent 可以读取。不同于 Tools，Resources **不执行副作用**。
+
+- 通过 `resources/list` 发现，通过 `resources/read` 读取。
+- URI 必须唯一，使用 `resource://` scheme。
+- 返回格式：`{ contents: [{ uri, mimeType, text }] }`
+
+### 标准实现
+
+```typescript
+@Resource({
+  name: 'my_resource',                    // 唯一名称
+  description: '资源描述',                  // 人类可读说明
+  mimeType: 'application/json',            // 或 'text/plain' / 'text/markdown'
+  uri: 'resource://ai-engine/my-resource', // 唯一 URI
+})
+getMyResource({ uri }: { uri: string }) {
+  return {
+    contents: [
+      {
+        uri,
+        mimeType: 'application/json',
+        text: JSON.stringify({ ... }, null, 2),
+      },
+    ],
+  };
+}
+```
+
+### Resource Templates（动态 URI）
+
+使用 `@ResourceTemplate()` 定义参数化资源：
+
+```typescript
+@ResourceTemplate({
+  name: 'flight_detail',
+  description: '获取指定航班的详细信息',
+  mimeType: 'application/json',
+  uriTemplate: 'resource://ai-engine/flights/{id}',
+})
+getFlightDetail({ uri, id }: { uri: string; id: string }) {
+  // id 从 URI 中自动提取
+  return { contents: [{ uri, mimeType: 'application/json', text: '...' }] };
+}
+```
+
+---
+
+## 5. MCP-Nest 提供的异常过滤
+
+MCP-Nest 原生集成 NestJS 异常过滤器：
+
+```typescript
+import { Catch, ExceptionFilter } from '@nestjs/common';
+
+@Catch(CustomError)
+class CustomErrorFilter implements ExceptionFilter {
+  catch(exception: CustomError) {
+    return `[${exception.code}] ${exception.message}`;
+  }
+}
+
+@Injectable()
+@UseFilters(CatchAllFilter)
+class MyTool {
+  @Tool({ ... })
+  @UseFilters(CustomErrorFilter)
+  async myTool({ input }) {
+    // 优先使用 CustomErrorFilter
+  }
+}
+```
+
+过滤器返回值处理：
+
+- **Tools**：返回 `{ content: [{ type: 'text', text: filterResult }], isError: true }`
+- **Resources/Prompts**：作为 MCP internal error (`-32603`) 的 message 抛出
+
+---
+
+## 6. 响应构建器模式
+
+将工具响应格式统一封装为私有 Helper 方法，保证一致性：
+
+```typescript
+private buildFlightSearchResponse(result: FlightSearchResult) {
+  return {
+    content: [{ type: 'text' as const, text: this.formatFlightResultsText(result) }],
+    structuredContent: { flight: { flights: result.flights, totalCount: result.totalCount, ... } },
+    _meta: FlightTool.TOOL_META,
+  };
+}
+```
+
+> `_meta` 用于客户端 UI 集成（如 ChatGPT/Claude 的 outputTemplate），不影响 MCP 协议本身。
+
+---
+
+## 7. 传输模式选择
+
+### Streamable HTTP（当前使用）
+
+```typescript
+import { McpTransportType } from '@rekog/mcp-nest';
+
+McpModule.forRoot({
+  name: 'my-server',
+  version: '1.0.0',
+  transport: [McpTransportType.STREAMABLE_HTTP],
+  streamableHttp: {
+    enableJsonResponse: true,    // JSON 响应（推荐），false = SSE 响应
+    sessionIdGenerator: undefined, // 无状态模式（每个请求独立）
+    statelessMode: true,
+  },
+});
+```
+
+**无状态 vs 有状态**：
+
+| 模式 | `sessionIdGenerator` | 适用场景 |
+|------|---------------------|----------|
+| 无状态 | `undefined` | REST-like，客户端自行管理状态 |
+| 有状态 | `() => randomUUID()` | 浏览器客户端，需服务端 Session |
+
+**有状态模式下**，`McpModule.forRoot()` 会自动暴露：
+- `POST /mcp` — 工具调用
+- `GET /mcp` — SSE 实时推送
+- `DELETE /mcp` — 关闭 Session
+
+---
+
+## 8. 动态能力注册
+
+工具/资源/提示词也支持运行时动态注册，不依赖装饰器：
+
+```typescript
+@Injectable()
+export class DynamicToolsService implements OnModuleInit {
+  constructor(private readonly registry: McpRegistryService) {}
+
+  onModuleInit() {
+    this.registry.registerTool({
+      name: 'dynamic_tool',
+      description: '...',
+      parameters: z.object({ query: z.string() }),
+      handler: async (args) => ({
+        content: [{ type: 'text', text: `Result: ${args.query}` }],
+      }),
+    });
+  }
+}
+```
+
+适用场景：从数据库加载工具定义、插件系统、动态配置。
+
+---
+
+## 9. 测试
+
+### 使用 MCP Inspector
+
+```bash
+# 1. 启动 MCP 服务器
+npx ts-node-dev --respawn apps/service-ai-platfrom/src/main.ts
+
+# 2. 启动 Inspector（UI）
+npx @modelcontextprotocol/inspector@0.16.2
+
+# 连接至 http://localhost:9001/mcp 进行交互测试
+```
+
+### CLI 手动测试
+
+```bash
+# 列出工具
+curl -X POST http://localhost:9001/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"method":"tools/list","params":{}}'
+
+# 调用工具
+curl -X POST http://localhost:9001/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"method":"tools/call","params":{"name":"search_low_price_flights","arguments":{"departure":"北京","arrival":"上海"}}}'
+
+# 列出资源
+curl -X POST http://localhost:9001/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"method":"resources/list","params":{}}'
+```
+
+---
+
+## 10. 常见错误与规范
+
+### ❌ 禁止的模式
+
+```typescript
+// 错误1：在 async 函数中使用 new Promise(resolve => resolve(...))
+async getFlightById(id: string): Promise<Flight | null> {
+  return new Promise((resolve) => { // 不需要！
+    resolve({ ... });
+  });
+}
+
+// 正确：直接返回
+async getFlightById(id: string): Promise<Flight | null> {
+  return { ... };
+}
+
+// 错误2：在非 async 函数中使用 await
+someMethod() { // 没有 async
+  await this.service.find(); // ❌ 语法错误
+}
+
+// 正确
+async someMethod() {
+  await this.service.find();
+}
+
+// 错误3：缺少 @Tool/@Resource 装饰器
+export class MyTool {
+  myMethod(params) { ... } // ❌ 不会被自动发现
+}
+
+// 正确
+export class MyTool {
+  @Tool({ name: 'my_method', ... })
+  async myMethod(params) { ... }
+}
+
+// 错误4：Resource 方法缺少 uri 参数
+@Resource({ name: 'my_resource', uri: 'resource://x/y' })
+getResource() { // ❌ 缺少 { uri } 参数
+  return { contents: [...] };
+}
+
+// 正确
+@Resource({ name: 'my_resource', uri: 'resource://x/y' })
+getResource({ uri }: { uri: string }) {
+  return { contents: [{ uri, ... }] };
+}
+
+// 错误5：FlightModule 中导入 McpModule
+@Module({
+  imports: [McpModule], // ❌ 循环依赖！
+  providers: [FlightService, FlightTool],
+})
+export class FlightModule {}
+
+// 正确：FlightTool 声明在 McpModule 中，FlightModule 只导出 FlightService
+```
+
+### ✅ 正确示例对照
+
+```typescript
+// flight.service.ts — 纯业务逻辑
+@Injectable()
+export class FlightService {
+  async searchLowPriceFlights(params): Promise<FlightSearchResult> {
+    return { success: true, flights: [...], totalCount: 1, message: 'OK' };
+  }
+}
+
+// flight.tool.ts — MCP 工具层，注入 FlightService
+@Injectable()
+export class FlightTool {
+  constructor(private readonly flightService: FlightService) {}
+
+  @Tool({ name: 'search_low_price_flights', parameters: MySchema })
+  async search(params: MyParams) {
+    const result = await this.flightService.searchLowPriceFlights(params);
+    return this.buildFlightSearchResponse(result);
+  }
+}
+
+// mcp.module.ts — 注册 MCP Server
+@Module({
+  imports: [McpModule.forRoot({ ... }), FlightModule],
+  providers: [FlightTool],
+  exports: [McpModule, FlightModule],
+})
+export class McpModule {}
+
+// app.module.ts — 应用根模块
+@Module({
+  imports: [McpModule], // FlightService 通过 McpModule 间接导出
+})
+export class AppModule {}
+```
+
+---
+
+## 11. 关键参考文档索引
+
+| 文档 | 内容 |
+|------|------|
+| `docs/tools.md` | @Tool 装饰器详解：参数签名、响应格式、错误处理 |
+| `docs/resources.md` | @Resource 装饰器：静态资源定义 |
+| `docs/resource-templates.md` | @ResourceTemplate：参数化资源 |
+| `docs/prompts.md` | @Prompt 装饰器：AI 提示词模板 |
+| `docs/server-examples.md` | 传输类型配置（HTTP/Stateless/SSE/STDIO） |
+| `docs/tool-discovery-and-registration.md` | 自动发现 + forFeature 跨模块注册 |
+| `docs/dynamic-capabilities.md` | 运行时动态注册工具/资源/提示词 |
+| `docs/per-tool-authorization.md` | @PublicTool / @ToolScopes / @ToolRoles |
+| `docs/dependency-injection.md` | 在 Tool/Resource 中使用 NestJS DI |
+| `docs/server-mutation.md` | serverMutator：自定义 MCP Server 行为 |
+| `docs/built-in-authorization-server.md` | 内置 OAuth 服务器 |
+| `docs/azure-ad-oauth-provider.md` | Azure AD 集成 |
+| MCP Spec Resources | URI scheme、Subscription、Annotations |
+| MCP Spec Tools | Tool Result 格式、Structured Content、Error Handling |
