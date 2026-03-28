@@ -63,6 +63,12 @@ importers:
 
   apps/service-ai-platfrom:
     dependencies:
+      '@faker-js/faker':
+        specifier: ^10.4.0
+        version: 10.4.0
+      '@langchain/mcp-adapters':
+        specifier: ^1.1.3
+        version: 1.1.3(@cfworker/json-schema@4.1.1)(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))(@langchain/langgraph@1.2.6(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))
       '@mcp-ui/server':
         specifier: ^6.1.0
         version: 6.1.0(@cfworker/json-schema@4.1.1)(hono@4.12.8)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod@4.3.6)
@@ -96,6 +102,9 @@ importers:
       '@repo/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
+      loadash:
+        specifier: ^1.0.0
+        version: 1.0.0
       nestjs-zod:
         specifier: ^5.1.1
         version: 5.1.1(@nestjs/common@11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@11.2.6(@nestjs/common@11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14(@nestjs/common@11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.14)(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.3.6)
@@ -190,9 +199,15 @@ importers:
 
   apps/web:
     dependencies:
+      '@faker-js/faker':
+        specifier: ^10.4.0
+        version: 10.4.0
       '@langchain/core':
         specifier: ^1.1.32
         version: 1.1.32(openai@6.29.0(zod@4.3.6))
+      '@langchain/mcp-adapters':
+        specifier: ^1.1.3
+        version: 1.1.3(@cfworker/json-schema@4.1.1)(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))(@langchain/langgraph@1.2.6(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))
       '@langchain/openai':
         specifier: ^1.2.13
         version: 1.2.13(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))
@@ -201,10 +216,10 @@ importers:
         version: 6.1.0(@cfworker/json-schema@4.1.1)(hono@4.12.8)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod@4.3.6)
       '@modelcontextprotocol/ext-apps':
         specifier: ^1.2.2
-        version: 1.2.2(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod@4.3.6)
+        version: 1.2.2(@modelcontextprotocol/sdk@1.25.2(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod@4.3.6)
       '@modelcontextprotocol/sdk':
-        specifier: ~1.25.2
-        version: 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6)
+        specifier: 1.25.2
+        version: 1.25.2(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6)
       '@repo/lib':
         specifier: workspace:*
         version: link:../../packages/lib
@@ -226,9 +241,12 @@ importers:
       dotenv:
         specifier: ^17.3.1
         version: 17.3.1
+      loadsh:
+        specifier: ^0.0.4
+        version: 0.0.4
       mcp-handler:
         specifier: ^1.0.7
-        version: 1.0.7(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6))(next@16.1.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
+        version: 1.0.7(@modelcontextprotocol/sdk@1.25.2(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6))(next@16.1.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
       next:
         specifier: 16.1.5
         version: 16.1.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -903,6 +921,10 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@faker-js/faker@10.4.0':
+    resolution: {integrity: sha512-sDBWI3yLy8EcDzgobvJTWq1MJYzAkQdpjXuPukga9wXonhpMRvd1Izuo2Qgwey2OiEoRIBr35RMU9HJRoOHzpw==}
+    engines: {node: ^20.19.0 || ^22.13.0 || ^23.5.0 || >=24.0.0, npm: '>=10'}
+
   '@hono/node-server@1.19.11':
     resolution: {integrity: sha512-dr8/3zEaB+p0D2n/IUrlPF1HZm586qgJNXK1a9fhg/PzdtkK7Ksd5l312tJX2yBuALqDYBlG20QEbayqPyxn+g==}
     engines: {node: '>=18.14.1'}
@@ -1341,6 +1363,50 @@ packages:
     resolution: {integrity: sha512-ZZNiER5tceFXqZOghfrxNHzM60gcQL5XK/8Ow5+o4OuKHrP1p/RUQBDM9Y1nddi/VmKQj+ncaXXM5KovXTEGGQ==}
     engines: {node: '>=20'}
 
+  '@langchain/langgraph-checkpoint@1.0.1':
+    resolution: {integrity: sha512-HM0cJLRpIsSlWBQ/xuDC67l52SqZ62Bh2Y61DX+Xorqwoh5e1KxYvfCD7GnSTbWWhjBOutvnR0vPhu4orFkZfw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': ^1.0.1
+
+  '@langchain/langgraph-sdk@1.8.2':
+    resolution: {integrity: sha512-TQSw5O0NiE0W6D+UKcv6AdvCqQD2Xbv96oaUFUSSL3nnQ0WfZLcF5nPNTQm6KLUo4EuhKZeeoAgnDb2hRDW2Hw==}
+    peerDependencies:
+      '@langchain/core': ^1.1.16
+      react: ^18 || ^19
+      react-dom: ^18 || ^19
+      svelte: ^4.0.0 || ^5.0.0
+      vue: ^3.0.0
+    peerDependenciesMeta:
+      '@langchain/core':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+
+  '@langchain/langgraph@1.2.6':
+    resolution: {integrity: sha512-5cX402dNGN6w9+0mlMU2dgUiKx6Y1tlENp7x05e9ByDbQCHSDc0kyqRWNFLGc7vatQ92S4ylxQrcCJvi8Fr4SQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': ^1.1.16
+      zod: ^3.25.32 || ^4.2.0
+      zod-to-json-schema: ^3.x
+    peerDependenciesMeta:
+      zod-to-json-schema:
+        optional: true
+
+  '@langchain/mcp-adapters@1.1.3':
+    resolution: {integrity: sha512-OPHIQNkTUJjnRj1pr+cp2nguMBZeF3Q1pVT1hCbgU7BrHgV7lov99wbU8po8Cm4zZzmeRtVO/T9X1SrDD1ogtQ==}
+    engines: {node: '>=20.10.0'}
+    peerDependencies:
+      '@langchain/core': ^1.0.0
+      '@langchain/langgraph': ^1.0.0
+
   '@langchain/openai@1.2.13':
     resolution: {integrity: sha512-zyspKSBnyxICxZyGYMxsSkCUJR09Uj1omMGBrUsvpSu9j+zIbfNg4+NQTIRmnzULoKB+keaioOdLGHxOQru3+w==}
     engines: {node: '>=20'}
@@ -1386,16 +1452,6 @@ packages:
 
   '@modelcontextprotocol/sdk@1.25.2':
     resolution: {integrity: sha512-LZFeo4F9M5qOhC/Uc1aQSrBHxMrvxett+9KLHt7OhcExtoiRN9DKgbZffMP/nxjutWDQpfMDfP3nkHI4X9ijww==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      '@cfworker/json-schema': ^4.1.1
-      zod: ^3.25 || ^4.0
-    peerDependenciesMeta:
-      '@cfworker/json-schema':
-        optional: true
-
-  '@modelcontextprotocol/sdk@1.25.3':
-    resolution: {integrity: sha512-vsAMBMERybvYgKbg/l4L1rhS7VXV1c0CtyJg72vwxONVX0l4ZfKVAnZEWTQixJGTzKnELjQ59e4NbdFDALRiAQ==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
@@ -3168,6 +3224,9 @@ packages:
   eventemitter3@4.0.7:
     resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
 
+  eventemitter3@5.0.4:
+    resolution: {integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==}
+
   events@3.3.0:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==, tarball: https://registry.npmmirror.com/events/-/events-3.3.0.tgz}
     engines: {node: '>=0.8.x'}
@@ -3211,6 +3270,9 @@ packages:
   express@5.2.1:
     resolution: {integrity: sha512-hIS4idWWai69NezIdRt2xFVofaF4j+6INOpJlVOLDO8zXGpUVEVzIYk12UUi2JzjEzWL3IOAxcTubgz9Po0yXw==}
     engines: {node: '>= 18'}
+
+  extended-eventsource@1.7.0:
+    resolution: {integrity: sha512-s8rtvZuYcKBpzytHb5g95cHbZ1J99WeMnV18oKc5wKoxkHzlzpPc/bNAm7Da2Db0BDw0CAu1z3LpH+7UsyzIpw==}
 
   external-editor@2.2.0:
     resolution: {integrity: sha512-bSn6gvGxKt+b7+6TKEv1ZycHleA7aHhRHyAqJyp5pbUFuYYNIzpZnQDk7AsYckyWdEnTeAnay0aCy2aV6iTk9A==, tarball: https://registry.npmmirror.com/external-editor/-/external-editor-2.2.0.tgz}
@@ -3680,6 +3742,10 @@ packages:
     resolution: {integrity: sha512-5KoIu2Ngpyek75jXodFvnafB6DJgr3u8uuK0LEZJjrU19DrMD3EVERaR8sjz8CCGgpZvxPl9SuE1GMVPFHx1mw==}
     engines: {node: '>= 0.4'}
 
+  is-network-error@1.3.1:
+    resolution: {integrity: sha512-6QCxa49rQbmUWLfk0nuGqzql9U8uaV2H6279bRErPBHe/109hCzsLUBUHfbEtvLIHBd6hyXbgedBSHevm43Edw==}
+    engines: {node: '>=16'}
+
   is-number-object@1.1.1:
     resolution: {integrity: sha512-lZhclumE1G6VYD8VHe35wFaIif+CTy5SJIi5+3y4psDgWu4wPDoBhF8NxUOinEc7pHgiTsT6MaBb92rKhhD+Xw==}
     engines: {node: '>= 0.4'}
@@ -4095,9 +4161,17 @@ packages:
     resolution: {integrity: sha512-v5xlu8eHD1+6r8EHTg6hfmO97LN8ugKtiXcy5e6oN72iD2r6u0RPfLl6fxM+7Wnh2ZRq15o0russMst44WauPA==, tarball: https://registry.npmmirror.com/load-esm/-/load-esm-1.0.3.tgz}
     engines: {node: '>=13.2.0'}
 
+  loadash@1.0.0:
+    resolution: {integrity: sha512-xlX5HBsXB3KG0FJbJJG/3kYWCfsCyCSus3T+uHVu6QL6YxAdggmm3QeyLgn54N2yi5/UE6xxL5ZWJAAiHzHYEg==}
+    deprecated: Package is unsupport. Please use the lodash package instead.
+
   loader-runner@4.3.1:
     resolution: {integrity: sha512-IWqP2SCPhyVFTBtRcgMHdzlf9ul25NwaFx4wCEH/KjAXuuHY4yNjvPXsBokp8jCB936PyWRaPKUNh8NvylLp2Q==, tarball: https://registry.npmmirror.com/loader-runner/-/loader-runner-4.3.1.tgz}
     engines: {node: '>=6.11.5'}
+
+  loadsh@0.0.4:
+    resolution: {integrity: sha512-U+wLL8InpfRalWrr+0SuhWgGt10M4OyAk6G8xCYo2rwpiHtxZkWiFpjei0vO463ghW8LPCdhqQxXlMy2qicAEw==}
+    deprecated: This is a typosquat on the popular Lodash package. This is not maintained nor is the original Lodash package.
 
   locate-path@5.0.0:
     resolution: {integrity: sha512-t7hw9pI+WvuwNJXwk5zVHpyhIqzg2qTlklJOf0mVxGSbe3Fp2VieZcduNYjaLDoy6p9uGpQEGWG87WpMKlNq8g==}
@@ -4497,9 +4571,21 @@ packages:
     resolution: {integrity: sha512-RwFpb72c/BhQLEXIZ5K2e+AhgNVmIejGlTgiB9MzZ0e93GRvqZ7uSi0dvRF7/XIXDeNkra2fNHBxTyPDGySpjQ==}
     engines: {node: '>=8'}
 
+  p-queue@9.1.0:
+    resolution: {integrity: sha512-O/ZPaXuQV29uSLbxWBGGZO1mCQXV2BLIwUr59JUU9SoH76mnYvtms7aafH/isNSNGwuEfP6W/4xD0/TJXxrizw==}
+    engines: {node: '>=20'}
+
+  p-retry@7.1.1:
+    resolution: {integrity: sha512-J5ApzjyRkkf601HpEeykoiCvzHQjWxPAHhyjFcEUP2SWq0+35NKh8TLhpLw+Dkq5TZBFvUM6UigdE9hIVYTl5w==}
+    engines: {node: '>=20'}
+
   p-timeout@3.2.0:
     resolution: {integrity: sha512-rhIwUycgwwKcP9yTOOFK/AKsAopjjCakVqLHePO3CC6Mir1Z99xT+R63jZxAT5lFZLa2inS5h+ZS2GvR99/FBg==}
     engines: {node: '>=8'}
+
+  p-timeout@7.0.1:
+    resolution: {integrity: sha512-AxTM2wDGORHGEkPCt8yqxOTMgpfbEHqF51f/5fJCmwFC3C/zNcGT63SymH2ttOAaiIws2zVg4+izQCjrakcwHg==}
+    engines: {node: '>=20'}
 
   p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==, tarball: https://registry.npmmirror.com/p-try/-/p-try-2.2.0.tgz}
@@ -5389,6 +5475,10 @@ packages:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
     hasBin: true
 
+  uuid@13.0.0:
+    resolution: {integrity: sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==}
+    hasBin: true
+
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==, tarball: https://registry.npmmirror.com/v8-compile-cache-lib/-/v8-compile-cache-lib-3.0.1.tgz}
 
@@ -6018,6 +6108,8 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
+  '@faker-js/faker@10.4.0': {}
+
   '@hono/node-server@1.19.11(hono@4.12.8)':
     dependencies:
       hono: 4.12.8
@@ -6517,6 +6609,51 @@ snapshots:
       - openai
       - ws
 
+  '@langchain/langgraph-checkpoint@1.0.1(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))':
+    dependencies:
+      '@langchain/core': 1.1.32(openai@6.29.0(zod@4.3.6))
+      uuid: 10.0.0
+
+  '@langchain/langgraph-sdk@1.8.2(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      '@types/json-schema': 7.0.15
+      p-queue: 9.1.0
+      p-retry: 7.1.1
+      uuid: 13.0.0
+    optionalDependencies:
+      '@langchain/core': 1.1.32(openai@6.29.0(zod@4.3.6))
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+
+  '@langchain/langgraph@1.2.6(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6)':
+    dependencies:
+      '@langchain/core': 1.1.32(openai@6.29.0(zod@4.3.6))
+      '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))
+      '@langchain/langgraph-sdk': 1.8.2(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@standard-schema/spec': 1.1.0
+      uuid: 10.0.0
+      zod: 4.3.6
+    optionalDependencies:
+      zod-to-json-schema: 3.25.1(zod@4.3.6)
+    transitivePeerDependencies:
+      - react
+      - react-dom
+      - svelte
+      - vue
+
+  '@langchain/mcp-adapters@1.1.3(@cfworker/json-schema@4.1.1)(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))(@langchain/langgraph@1.2.6(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))':
+    dependencies:
+      '@langchain/core': 1.1.32(openai@6.29.0(zod@4.3.6))
+      '@langchain/langgraph': 1.2.6(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6)
+      '@modelcontextprotocol/sdk': 1.27.1(@cfworker/json-schema@4.1.1)(zod@4.3.6)
+      debug: 4.4.3
+      zod: 4.3.6
+    optionalDependencies:
+      extended-eventsource: 1.7.0
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - supports-color
+
   '@langchain/openai@1.2.13(@langchain/core@1.1.32(openai@6.29.0(zod@4.3.6)))':
     dependencies:
       '@langchain/core': 1.1.32(openai@6.29.0(zod@4.3.6))
@@ -6575,14 +6712,6 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  '@modelcontextprotocol/ext-apps@1.2.2(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod@4.3.6)':
-    dependencies:
-      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6)
-      zod: 4.3.6
-    optionalDependencies:
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-
   '@modelcontextprotocol/ext-apps@1.2.2(@modelcontextprotocol/sdk@1.27.1(@cfworker/json-schema@4.1.1)(zod@4.3.6))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod@4.3.6)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.27.1(@cfworker/json-schema@4.1.1)(zod@4.3.6)
@@ -6592,30 +6721,6 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
 
   '@modelcontextprotocol/sdk@1.25.2(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6)':
-    dependencies:
-      '@hono/node-server': 1.19.11(hono@4.12.8)
-      ajv: 8.18.0
-      ajv-formats: 3.0.1(ajv@8.18.0)
-      content-type: 1.0.5
-      cors: 2.8.6
-      cross-spawn: 7.0.6
-      eventsource: 3.0.7
-      eventsource-parser: 3.0.6
-      express: 5.2.1
-      express-rate-limit: 7.5.1(express@5.2.1)
-      jose: 6.2.1
-      json-schema-typed: 8.0.2
-      pkce-challenge: 5.0.1
-      raw-body: 3.0.2
-      zod: 4.3.6
-      zod-to-json-schema: 3.25.1(zod@4.3.6)
-    optionalDependencies:
-      '@cfworker/json-schema': 4.1.1
-    transitivePeerDependencies:
-      - hono
-      - supports-color
-
-  '@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6)':
     dependencies:
       '@hono/node-server': 1.19.11(hono@4.12.8)
       ajv: 8.18.0
@@ -8473,6 +8578,8 @@ snapshots:
 
   eventemitter3@4.0.7: {}
 
+  eventemitter3@5.0.4: {}
+
   events@3.3.0: {}
 
   eventsource-parser@3.0.6: {}
@@ -8549,6 +8656,9 @@ snapshots:
       vary: 1.1.2
     transitivePeerDependencies:
       - supports-color
+
+  extended-eventsource@1.7.0:
+    optional: true
 
   external-editor@2.2.0:
     dependencies:
@@ -9085,6 +9195,8 @@ snapshots:
   is-map@2.0.3: {}
 
   is-negative-zero@2.0.3: {}
+
+  is-network-error@1.3.1: {}
 
   is-number-object@1.1.1:
     dependencies:
@@ -9668,7 +9780,11 @@ snapshots:
 
   load-esm@1.0.3: {}
 
+  loadash@1.0.0: {}
+
   loader-runner@4.3.1: {}
+
+  loadsh@0.0.4: {}
 
   locate-path@5.0.0:
     dependencies:
@@ -9754,9 +9870,9 @@ snapshots:
 
   math-intrinsics@1.1.0: {}
 
-  mcp-handler@1.0.7(@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6))(next@16.1.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0)):
+  mcp-handler@1.0.7(@modelcontextprotocol/sdk@1.25.2(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6))(next@16.1.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0)):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.25.3(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6)
+      '@modelcontextprotocol/sdk': 1.25.2(@cfworker/json-schema@4.1.1)(hono@4.12.8)(zod@4.3.6)
       chalk: 5.6.2
       commander: 11.1.0
       redis: 4.7.1
@@ -10025,9 +10141,20 @@ snapshots:
       eventemitter3: 4.0.7
       p-timeout: 3.2.0
 
+  p-queue@9.1.0:
+    dependencies:
+      eventemitter3: 5.0.4
+      p-timeout: 7.0.1
+
+  p-retry@7.1.1:
+    dependencies:
+      is-network-error: 1.3.1
+
   p-timeout@3.2.0:
     dependencies:
       p-finally: 1.0.0
+
+  p-timeout@7.0.1: {}
 
   p-try@2.2.0: {}
 
@@ -11026,6 +11153,8 @@ snapshots:
   uuid@10.0.0: {}
 
   uuid@11.1.0: {}
+
+  uuid@13.0.0: {}
 
   v8-compile-cache-lib@3.0.1: {}
 
