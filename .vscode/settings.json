@@ -33,12 +33,14 @@
     }
   ],
   "cSpell.words": [
+    "amap",
     "langchain",
     "modelcontextprotocol",
     "ontoolresult",
     "qwen",
     "rekog",
     "singlefile",
-    "Streamable"
+    "Streamable",
+    "STREAMABLEHTTP"
   ]
 }

@@ -14,7 +14,9 @@
         "QWEN_CODER_TURBO_MODEL_BASE_URL",
         "PROJECT_ROOT",
         "APP_ENV",
-        "QWEN_CODER_PLUS_MODEL_NAME"
+        "QWEN_CODER_PLUS_MODEL_NAME",
+        "AMAP_MAPS_STREAMABLEHTTP_URL",
+        "ALLOWED_FS_PATHS"
       ]
     },
     "lint": {
